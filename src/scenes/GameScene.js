@@ -6,6 +6,7 @@
 import Phaser from 'phaser';
 import GameConfig from '../config/GameConfig.js';
 import GameAPI from '../api/GameAPI.js';
+import MockGameAPI from '../api/MockGameAPI.js';
 import SymbolManager from '../utils/SymbolManager.js';
 import GridManager from '../core/GridManager.js';
 import GameStateManager from '../core/GameStateManager.js';
@@ -89,11 +90,20 @@ export class GameScene extends Phaser.Scene {
    * Initialize all game managers
    */
   initializeManagers() {
-    // Initialize API client
-    this.gameAPI = new GameAPI({
-      baseURL: import.meta.env.VITE_API_BASE_URL,
-      apiKey: import.meta.env.VITE_API_KEY
-    });
+    // Initialize API client (use MockAPI if no backend configured)
+    const useDemo = !import.meta.env.VITE_API_BASE_URL ||
+                    import.meta.env.VITE_API_BASE_URL === 'demo';
+
+    if (useDemo) {
+      console.log('[GameScene] Using Mock API (Demo Mode)');
+      this.gameAPI = new MockGameAPI();
+    } else {
+      console.log('[GameScene] Using Real API');
+      this.gameAPI = new GameAPI({
+        baseURL: import.meta.env.VITE_API_BASE_URL,
+        apiKey: import.meta.env.VITE_API_KEY
+      });
+    }
 
     // Initialize symbol manager
     this.symbolManager = new SymbolManager(this);
